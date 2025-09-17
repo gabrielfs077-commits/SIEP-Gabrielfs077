@@ -2,47 +2,63 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import binom
 
 # Título do aplicativo
 st.title('Análise de Overbooking e ROI - SIEP')
 st.markdown('---')
 
-# --- Análise de Overbooking ---
+# --- Análise de Overbooking Interativa ---
 st.header('Análise de Overbooking (Questão 1)')
+st.markdown('Ajuste os parâmetros abaixo para simular diferentes cenários de Overbooking:')
 
+# Widgets de entrada para o usuário (Questão 1)
+col1, col2 = st.columns(2)
+with col1:
+    capacidade_user = st.number_input('Capacidade do Avião', min_value=100, max_value=200, value=120, step=1)
+with col2:
+    p_comparecimento_user = st.number_input('Probabilidade de Comparecimento (%)', min_value=0.0, max_value=100.0, value=88.0, step=0.1) / 100
+
+# Parâmetros de cálculo
+max_vendidos = int(capacidade_user * 1.2)  # Aumenta o limite de vendas para a simulação
+valores_vendidos = list(range(capacidade_user, max_vendidos + 1))
+probs_user = [1 - binom.cdf(capacidade_user, n, p_comparecimento_user) for n in valores_vendidos]
+
+df_overbooking_user = pd.DataFrame({
+    'Passagens Vendidas': valores_vendidos,
+    'Probabilidade de Overbooking (%)': np.array(probs_user) * 100
+})
+
+# Encontra o limite de venda seguro com a nova probabilidade
 try:
-    # Carrega os dados pré-calculados de overbooking
-    df_overbooking = pd.read_csv('overbooking_data.csv')
-    
-    # Exibe a tabela de risco
-    st.subheader('Tabela de Risco de Overbooking')
-    st.dataframe(df_overbooking)
-    
-    # Exibe o gráfico de overbooking
-    st.subheader('Gráfico de Probabilidade de Overbooking')
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(df_overbooking['Passagens Vendidas'], df_overbooking['Probabilidade de Overbooking (%)'], marker='o')
-    ax.axhline(y=7, color='red', linestyle='--', label='Limite de 7%')
-    
-    # Encontra o limite de venda seguro
-    limite_venda = df_overbooking[df_overbooking['Probabilidade de Overbooking (%)'] <= 7]['Passagens Vendidas'].max()
-    ax.axvline(x=limite_venda, color='green', linestyle='--', label=f'Limite seguro: {limite_venda}')
-    
-    ax.set_title('Probabilidade de Overbooking x Passagens Vendidas')
-    ax.set_xlabel('Passagens Vendidas')
-    ax.set_ylabel('Probabilidade de Overbooking (%)')
-    ax.legend()
-    ax.grid(True)
-    st.pyplot(fig)
-    
-    # Comentário final da questão 1
-    st.markdown(f'''
-    - **Probabilidade de Overbooking (130 passagens):** {df_overbooking.loc[df_overbooking['Passagens Vendidas'] == 130, 'Probabilidade de Overbooking (%)'].iloc[0]:.2f}%
-    - **Limite de Venda Seguro:** Para manter o risco abaixo de 7%, a empresa não deve vender mais que **{limite_venda}** passagens.
-    ''')
+    limite_venda_user = df_overbooking_user[df_overbooking_user['Probabilidade de Overbooking (%)'] <= 7]['Passagens Vendidas'].max()
+    if np.isnan(limite_venda_user):
+        limite_venda_user = "N/A (Risco sempre alto)"
+except:
+    limite_venda_user = "N/A (Risco sempre alto)"
 
-except FileNotFoundError:
-    st.error("Arquivo 'overbooking_data.csv' não encontrado. Certifique-se de que o pré-cálculo foi realizado e o arquivo está no local correto.")
+# Exibe o gráfico de overbooking
+st.subheader('Gráfico de Probabilidade de Overbooking')
+fig, ax = plt.subplots(figsize=(10, 6))
+ax.plot(df_overbooking_user['Passagens Vendidas'], df_overbooking_user['Probabilidade de Overbooking (%)'], marker='o')
+ax.axhline(y=7, color='red', linestyle='--', label='Limite de 7%')
+
+if isinstance(limite_venda_user, int):
+    ax.axvline(x=limite_venda_user, color='green', linestyle='--', label=f'Limite seguro: {limite_venda_user}')
+else:
+    ax.axvline(x=capacidade_user, color='orange', linestyle='--', label='Limite de Venda: Capacidade')
+
+ax.set_title('Probabilidade de Overbooking x Passagens Vendidas')
+ax.set_xlabel('Passagens Vendidas')
+ax.set_ylabel('Probabilidade de Overbooking (%)')
+ax.legend()
+ax.grid(True)
+st.pyplot(fig)
+
+st.markdown(f'''
+- **Limite de Venda Seguro:** Para manter o risco abaixo de 7%, a empresa não deve vender mais que **{limite_venda_user}** passagens.
+- **Análise:** Aumentar a probabilidade de comparecimento reduz o número de passagens extras que podem ser vendidas com segurança.
+''')
 
 st.markdown('---')
 
@@ -50,11 +66,11 @@ st.markdown('---')
 st.header('Análise de ROI (Questão 2)')
 st.markdown('Ajuste os parâmetros abaixo para simular diferentes cenários de ROI:')
 
-# Widgets de entrada para o usuário
-col1, col2 = st.columns(2)
-with col1:
+# Widgets de entrada para o usuário (Questão 2)
+col3, col4 = st.columns(2)
+with col3:
     receita_esperada_user = st.number_input('Receita Esperada (R$)', min_value=50000, max_value=150000, value=80000, step=1000)
-with col2:
+with col4:
     custo_operacional_user = st.number_input('Custo Operacional (R$)', min_value=5000, max_value=50000, value=10000, step=500)
 
 investimento = 50000
