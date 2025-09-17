@@ -46,41 +46,40 @@ except FileNotFoundError:
 
 st.markdown('---')
 
-# --- Análise de ROI ---
+# --- Análise de ROI com Interatividade ---
 st.header('Análise de ROI (Questão 2)')
+st.markdown('Ajuste os parâmetros abaixo para simular diferentes cenários de ROI:')
 
+# Widgets de entrada para o usuário
+col1, col2 = st.columns(2)
+with col1:
+    receita_esperada_user = st.number_input('Receita Esperada (R$)', min_value=50000, max_value=150000, value=80000, step=1000)
+with col2:
+    custo_operacional_user = st.number_input('Custo Operacional (R$)', min_value=5000, max_value=50000, value=10000, step=500)
+
+investimento = 50000
+
+# Recalcula o ROI baseado nas entradas do usuário
+lucro_simulado = receita_esperada_user - custo_operacional_user
+roi_simulado = (lucro_simulado / investimento) * 100
+
+st.subheader('Resultados da Simulação de ROI')
+st.markdown(f"**Investimento:** R$ {investimento:,.2f}")
+st.markdown(f"**Lucro Calculado:** R$ {lucro_simulado:,.2f}")
+st.markdown(f"**ROI Calculado:** **{roi_simulado:.2f}%**")
+
+# Exibe o gráfico de distribuição de ROIs e cenários fixos
 try:
-    # Carrega os dados pré-calculados do ROI
     cenarios = pd.read_csv('roi_data.csv')
     receitas_simuladas = np.load('receitas_simuladas.npy')
     
-    # Exibe a tabela de cenários
-    st.subheader('Cenários de ROI')
-    st.dataframe(cenarios)
-
-    # Exibe o gráfico de distribuição de receitas
-    st.subheader('Distribuição das Receitas Simuladas')
-    fig_receitas, ax_receitas = plt.subplots(figsize=(10, 6))
-    ax_receitas.hist(receitas_simuladas, bins=30, color='lightblue', edgecolor='black')
-    ax_receitas.axvline(x=60000, color='red', linestyle='--', label='Meta mínima R$60k')
-    ax_receitas.axvline(x=80000, color='green', linestyle='--', label='Meta esperada R$80k')
-    ax_receitas.set_title('Distribuição das Receitas Simuladas')
-    ax_receitas.set_xlabel('Receita (R$)')
-    ax_receitas.set_ylabel('Frequência')
-    ax_receitas.legend()
-    ax_receitas.grid(True)
-    st.pyplot(fig_receitas)
-
-    # Exibe o gráfico de distribuição dos ROIs
-    st.subheader('Distribuição dos ROIs Simulados')
-    investimento = 50000
-    custo_operacional = 10000
-    rois = ((receitas_simuladas - custo_operacional) / investimento) * 100
+    st.subheader('Distribuição dos ROIs Simulados (Cenários Fixos)')
+    rois_simulacao = ((receitas_simuladas - custo_operacional_user) / investimento) * 100
     
     fig_roi, ax_roi = plt.subplots(figsize=(10, 6))
-    ax_roi.hist(rois, bins=30, color='lightgreen', edgecolor='black')
+    ax_roi.hist(rois_simulacao, bins=30, color='lightgreen', edgecolor='black')
     ax_roi.axvline(x=0, color='red', linestyle='--', label='ROI = 0%')
-    ax_roi.axvline(x=cenarios.loc[cenarios['Cenário'] == 'Realista', 'ROI (%)'].iloc[0], color='blue', linestyle='--', label='ROI esperado')
+    ax_roi.axvline(x=roi_simulado, color='blue', linestyle='--', label=f'ROI (Usuário) = {roi_simulado:.2f}%')
     ax_roi.set_title('Distribuição dos ROIs Simulados')
     ax_roi.set_xlabel('ROI (%)')
     ax_roi.set_ylabel('Frequência')
@@ -90,8 +89,8 @@ try:
 
     # Comentário final da questão 2
     st.markdown(f'''
-    - **ROI Esperado:** {cenarios.loc[cenarios['Cenário'] == 'Realista', 'ROI (%)'].iloc[0]:.2f}%
-    - **Chance de Receita abaixo de R$ 60.000:** {(np.mean(receitas_simuladas < 60000) * 100):.2f}%
+    - **Comentário:** O ROI esperado de **{cenarios.loc[cenarios['Cenário'] == 'Realista', 'ROI (%)'].iloc[0]:.2f}%** sugere um investimento viável.
+    - **Nota:** A interatividade acima demonstra como alterações nos valores de receita e custo afetam o ROI, proporcionando uma ferramenta de análise dinâmica.
     ''')
 
 except FileNotFoundError:
