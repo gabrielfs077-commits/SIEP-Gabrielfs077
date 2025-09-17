@@ -113,13 +113,13 @@ except FileNotFoundError:
     st.error("Arquivos de dados de ROI não encontrados. Certifique-se de que o pré-cálculo foi realizado e os arquivos estão no local correto.")
 
 st.markdown('---')
-st.markdown('**Comentários Finais da Tarefa:**')
+st.markdown('**Análise da Tarefa:**')
 st.markdown('''
 - A análise de Overbooking sugere que a estratégia inicial de vender 130 passagens é arriscada, excedendo o limite de 7%. O sistema de informações deve ser ajustado para limitar as vendas a 129 passagens.
 - A análise de ROI mostra que, embora o investimento seja promissor, há um risco considerável de a receita ficar abaixo do esperado. Recomenda-se um monitoramento contínuo para ajustar a estratégia dinamicamente.
 ''')
 st.markdown('---')
-st.header('Análise e Comentários Finais da Tarefa')
+st.header('Comentários Finais da Tarefa')
 
 st.markdown('''
 A interatividade deste dashboard não serve apenas para visualizar os resultados, mas para transformá-lo em uma ferramenta dinâmica de análise e tomada de decisão. As alterações nos parâmetros revelam insights importantes e ajudam a quantificar os riscos e oportunidades de forma mais precisa.
