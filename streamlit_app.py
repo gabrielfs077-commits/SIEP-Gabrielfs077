@@ -9,7 +9,7 @@ st.title('Análise de Overbooking e ROI - SIEP')
 st.markdown('---')
 
 # --- Análise de Overbooking Interativa ---
-st.header('Análise de Overbooking (Questão 1)')
+st.header('Análise de Overbooking')
 st.markdown('Ajuste os parâmetros abaixo para simular diferentes cenários de Overbooking:')
 
 # Widgets de entrada para o usuário (Questão 1)
@@ -63,7 +63,7 @@ st.markdown(f'''
 st.markdown('---')
 
 # --- Análise de ROI com Interatividade ---
-st.header('Análise de ROI (Questão 2)')
+st.header('Análise de ROI')
 st.markdown('Ajuste os parâmetros abaixo para simular diferentes cenários de ROI:')
 
 # Widgets de entrada para o usuário (Questão 2)
