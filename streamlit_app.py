@@ -1,157 +1,105 @@
 import streamlit as st
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import binom
-import pandas as pd
 
-# Definindo a configuração da página
-st.set_page_config(
-    page_title="Aérea Confiável - Análise de Overbooking e ROI",
-    layout="wide",
-)
+# Título do aplicativo
+st.title('Análise de Overbooking e ROI - SIEP')
+st.markdown('---')
 
-# Título principal e cabeçalho
-st.title("Sistema de Análise de Decisão da Aérea Confiável")
-st.markdown("Bem-vindo ao sistema de análise de overbooking e ROI. Utilize os controles na barra lateral para simular diferentes cenários.")
+# --- Análise de Overbooking ---
+st.header('Análise de Overbooking (Questão 1)')
 
-# =========================================================
-# Barra Lateral com Controles Interativos
-# =========================================================
-
-st.sidebar.header("Controles de Simulação")
-
-# Controle para o número de passagens vendidas (Módulo 1)
-st.sidebar.subheader("Análise de Overbooking")
-capacidade = 120
-p_comparecimento = 0.88
-vendas_max = 140
-vendidos_slider = st.sidebar.slider(
-    "Número de Passagens Vendidas",
-    min_value=120,
-    max_value=vendas_max,
-    value=130,
-    step=1
-)
-
-st.sidebar.markdown("---")
-
-# Controles para o cenário de ROI (Módulo 2)
-st.sidebar.subheader("Análise de ROI")
-investimento_input = st.sidebar.number_input(
-    "Custo de Investimento Inicial (R$)",
-    min_value=10000,
-    max_value=100000,
-    value=50000,
-    step=5000
-)
-
-receita_esperada_input = st.sidebar.number_input(
-    "Aumento de Receita Esperada (R$)",
-    min_value=20000,
-    max_value=120000,
-    value=80000,
-    step=5000
-)
-
-custo_operacional = 10000
-
-# =========================================================
-# Abas para Organização do Conteúdo Principal
-# =========================================================
-
-tab1, tab2, tab3 = st.tabs(["Análise de Overbooking", "Análise de ROI", "Conclusão"])
-
-with tab1:
-    st.header("Análise de Overbooking")
-    st.markdown("Use o slider na barra lateral para ver como a probabilidade de overbooking muda com o número de passagens vendidas.")
-
-    # Cálculo da probabilidade de overbooking
-    prob_overbooking_atual = 1 - binom.cdf(capacidade, vendidos_slider, p_comparecimento)
-    st.metric(
-        label=f"Probabilidade de Overbooking com {vendidos_slider} passagens",
-        value=f"{prob_overbooking_atual:.2%}"
-    )
-
-    # Gráfico da probabilidade de overbooking
-    st.subheader("Gráfico de Risco de Overbooking")
-    valores_vendidos = list(range(capacidade, vendas_max + 1))
-    probs_overbooking = [1 - binom.cdf(capacidade, n, p_comparecimento) for n in valores_vendidos]
-
+try:
+    # Carrega os dados pré-calculados de overbooking
+    df_overbooking = pd.read_csv('overbooking_data.csv')
+    
+    # Exibe a tabela de risco
+    st.subheader('Tabela de Risco de Overbooking')
+    st.dataframe(df_overbooking)
+    
+    # Exibe o gráfico de overbooking
+    st.subheader('Gráfico de Probabilidade de Overbooking')
     fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(valores_vendidos, np.array(probs_overbooking) * 100, marker='o', label='Risco de Overbooking')
-    ax.axhline(y=7, color='red', linestyle='--', label='Limite de 7% (meta da gestão)')
-    ax.set_title("Probabilidade de Overbooking vs. Passagens Vendidas")
-    ax.set_xlabel("Passagens Vendidas")
-    ax.set_ylabel("Probabilidade de Overbooking (%)")
+    ax.plot(df_overbooking['Passagens Vendidas'], df_overbooking['Probabilidade de Overbooking (%)'], marker='o')
+    ax.axhline(y=7, color='red', linestyle='--', label='Limite de 7%')
+    
+    # Encontra o limite de venda seguro
+    limite_venda = df_overbooking[df_overbooking['Probabilidade de Overbooking (%)'] <= 7]['Passagens Vendidas'].max()
+    ax.axvline(x=limite_venda, color='green', linestyle='--', label=f'Limite seguro: {limite_venda}')
+    
+    ax.set_title('Probabilidade de Overbooking x Passagens Vendidas')
+    ax.set_xlabel('Passagens Vendidas')
+    ax.set_ylabel('Probabilidade de Overbooking (%)')
     ax.legend()
     ax.grid(True)
     st.pyplot(fig)
+    
+    # Comentário final da questão 1
+    st.markdown(f'''
+    - **Probabilidade de Overbooking (130 passagens):** {df_overbooking.loc[df_overbooking['Passagens Vendidas'] == 130, 'Probabilidade de Overbooking (%)'].iloc[0]:.2f}%
+    - **Limite de Venda Seguro:** Para manter o risco abaixo de 7%, a empresa não deve vender mais que **{limite_venda}** passagens.
+    ''')
 
-    # Identificando o limite de risco
-    limite_venda = next((n for n, p in zip(valores_vendidos, probs_overbooking) if p <= 0.07), None)
-    st.success(f"Para manter o risco de overbooking abaixo de 7%, a empresa deve vender no máximo **{limite_venda}** passagens.")
+except FileNotFoundError:
+    st.error("Arquivo 'overbooking_data.csv' não encontrado. Certifique-se de que o pré-cálculo foi realizado e o arquivo está no local correto.")
 
-with tab2:
-    st.header("Análise de ROI do Novo Sistema de TI")
-    st.markdown("Ajuste os valores para o investimento e a receita esperada na barra lateral para simular o ROI do novo sistema.")
+st.markdown('---')
 
-    # Cálculo do ROI
-    lucro_esperado = receita_esperada_input - custo_operacional
-    roi_esperado = (lucro_esperado / investimento_input) * 100
-    st.metric(label="ROI Esperado", value=f"{roi_esperado:.2f}%")
+# --- Análise de ROI ---
+st.header('Análise de ROI (Questão 2)')
 
-    # Simulação de cenários
-    st.subheader("Simulação de Cenários de ROI")
-    st.markdown("A simulação mostra a distribuição do ROI final considerando a incerteza da receita.")
-    n_simulacoes = 5000
-    prob_sucesso = 0.7
+try:
+    # Carrega os dados pré-calculados do ROI
+    cenarios = pd.read_csv('roi_data.csv')
+    receitas_simuladas = np.load('receitas_simuladas.npy')
+    
+    # Exibe a tabela de cenários
+    st.subheader('Cenários de ROI')
+    st.dataframe(cenarios)
 
-    resultados_simulacao = np.random.binomial(1, prob_sucesso, n_simulacoes)
-    receitas_simuladas = np.where(
-        resultados_simulacao == 1,
-        np.random.normal(receita_esperada_input, 5000, n_simulacoes),
-        np.random.normal(receita_esperada_input * 0.75, 7000, n_simulacoes)
-    )
+    # Exibe o gráfico de distribuição de receitas
+    st.subheader('Distribuição das Receitas Simuladas')
+    fig_receitas, ax_receitas = plt.subplots(figsize=(10, 6))
+    ax_receitas.hist(receitas_simuladas, bins=30, color='lightblue', edgecolor='black')
+    ax_receitas.axvline(x=60000, color='red', linestyle='--', label='Meta mínima R$60k')
+    ax_receitas.axvline(x=80000, color='green', linestyle='--', label='Meta esperada R$80k')
+    ax_receitas.set_title('Distribuição das Receitas Simuladas')
+    ax_receitas.set_xlabel('Receita (R$)')
+    ax_receitas.set_ylabel('Frequência')
+    ax_receitas.legend()
+    ax_receitas.grid(True)
+    st.pyplot(fig_receitas)
 
-    rois_simulados = ((receitas_simuladas - custo_operacional) / investimento_input) * 100
-
-    # Gráfico da distribuição dos ROIs simulados
+    # Exibe o gráfico de distribuição dos ROIs
+    st.subheader('Distribuição dos ROIs Simulados')
+    investimento = 50000
+    custo_operacional = 10000
+    rois = ((receitas_simuladas - custo_operacional) / investimento) * 100
+    
     fig_roi, ax_roi = plt.subplots(figsize=(10, 6))
-    ax_roi.hist(rois_simulados, bins=30, color='lightgreen', edgecolor='black')
+    ax_roi.hist(rois, bins=30, color='lightgreen', edgecolor='black')
     ax_roi.axvline(x=0, color='red', linestyle='--', label='ROI = 0%')
-    ax_roi.axvline(x=roi_esperado, color='blue', linestyle='--', label=f'ROI Esperado: {roi_esperado:.2f}%')
-    ax_roi.set_title("Distribuição dos ROIs Simulados")
-    ax_roi.set_xlabel("ROI (%)")
-    ax_roi.set_ylabel("Frequência")
+    ax_roi.axvline(x=cenarios.loc[cenarios['Cenário'] == 'Realista', 'ROI (%)'].iloc[0], color='blue', linestyle='--', label='ROI esperado')
+    ax_roi.set_title('Distribuição dos ROIs Simulados')
+    ax_roi.set_xlabel('ROI (%)')
+    ax_roi.set_ylabel('Frequência')
     ax_roi.legend()
     ax_roi.grid(True)
     st.pyplot(fig_roi)
 
-    # Cenários de ROI para Tabela
-    cenarios_df = pd.DataFrame({
-        "Cenário": ["Otimista", "Realista", "Pessimista"],
-        "Receita (R$)": [receitas_simuladas.max(), receita_esperada_input, receitas_simuladas.min()],
-        "ROI (%)": [
-            ((receitas_simuladas.max() - custo_operacional) / investimento_input) * 100,
-            roi_esperado,
-            ((receitas_simuladas.min() - custo_operacional) / investimento_input) * 100
-        ]
-    })
-    st.subheader("Tabela de Cenários")
-    st.dataframe(cenarios_df.set_index("Cenário"))
+    # Comentário final da questão 2
+    st.markdown(f'''
+    - **ROI Esperado:** {cenarios.loc[cenarios['Cenário'] == 'Realista', 'ROI (%)'].iloc[0]:.2f}%
+    - **Chance de Receita abaixo de R$ 60.000:** {(np.mean(receitas_simuladas < 60000) * 100):.2f}%
+    ''')
 
-with tab3:
-    st.header("Conclusão e Recomendações")
-    st.markdown("""
-A adoção de um sistema como o que você analisou permite à Aérea Confiável tomar decisões baseadas em dados, indo além de simples suposições.
+except FileNotFoundError:
+    st.error("Arquivos de dados de ROI não encontrados. Certifique-se de que o pré-cálculo foi realizado e os arquivos estão no local correto.")
 
-**1. Sobre Overbooking:**
-* O gráfico interativo mostra claramente que vender mais passagens aumenta drasticamente o risco.
-* A empresa deve usar o limite seguro de 129 passagens como uma diretriz do sistema de vendas, em vez de um número fixo de 130.
-
-**2. Sobre ROI:**
-* O ROI esperado é positivo, mas a simulação mostra que há um risco real de o sistema não gerar o retorno esperado.
-* Recomenda-se um plano de implementação por fases e um monitoramento contínuo dos resultados.
-
-Em resumo, o sistema é uma ferramenta poderosa, mas deve ser usado com cautela, combinando a análise técnica com um olhar atento sobre os riscos financeiros e de imagem.
-""")
+st.markdown('---')
+st.markdown('**Comentários Finais da Tarefa:**')
+st.markdown('''
+- A análise de Overbooking sugere que a estratégia inicial de vender 130 passagens é arriscada, excedendo o limite de 7%. O sistema de informações deve ser ajustado para limitar as vendas a 129 passagens.
+- A análise de ROI mostra que, embora o investimento seja promissor, há um risco considerável de a receita ficar abaixo do esperado. Recomenda-se um monitoramento contínuo para ajustar a estratégia dinamicamente.
+''')
