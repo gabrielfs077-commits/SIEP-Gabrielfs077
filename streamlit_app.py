@@ -118,3 +118,26 @@ st.markdown('''
 - A análise de Overbooking sugere que a estratégia inicial de vender 130 passagens é arriscada, excedendo o limite de 7%. O sistema de informações deve ser ajustado para limitar as vendas a 129 passagens.
 - A análise de ROI mostra que, embora o investimento seja promissor, há um risco considerável de a receita ficar abaixo do esperado. Recomenda-se um monitoramento contínuo para ajustar a estratégia dinamicamente.
 ''')
+st.markdown('---')
+st.header('Análise e Comentários Finais da Tarefa')
+
+st.markdown('''
+A interatividade deste dashboard não serve apenas para visualizar os resultados, mas para transformá-lo em uma ferramenta dinâmica de análise e tomada de decisão. As alterações nos parâmetros revelam insights importantes e ajudam a quantificar os riscos e oportunidades de forma mais precisa.
+''')
+
+st.subheader('Importância da Interatividade na Análise de Overbooking')
+st.markdown('''
+A capacidade de ajustar a **Probabilidade de Comparecimento** e a **Capacidade do Avião** diretamente no dashboard demonstra o valor de um sistema de informação ágil.
+
+* **Entendendo o Risco Dinâmico:** Um aumento na probabilidade de comparecimento de 88% para 90%, por exemplo, aumenta drasticamente o risco de overbooking para um mesmo número de passagens vendidas. A ferramenta permite que a gerência entenda essa sensibilidade e defina um limite de vendas mais conservador em situações de alta probabilidade de comparecimento (como em feriados).
+* **Tomada de Decisão Baseada em Dados:** Em vez de depender de uma regra fixa, a equipe pode usar a ferramenta para estabelecer limites de vendas personalizados. Se a equipe de marketing realizar uma campanha para melhorar o comparecimento, o dashboard pode ser usado para simular o novo cenário e ajustar a estratégia de overbooking de forma proativa.
+''')
+
+st.subheader('Importância da Interatividade na Análise de ROI')
+st.markdown('''
+A interatividade na análise de **Retorno sobre o Investimento (ROI)** é crucial para a viabilidade financeira de um projeto. Os campos para **Receita Esperada** e **Custo Operacional** permitem que a gestão explore o impacto de diferentes variáveis em tempo real.
+
+* **Análise de Sensibilidade:** Ao alterar a receita esperada, a equipe pode simular o impacto de um desempenho de vendas superior ou inferior ao previsto. Isso ajuda a entender qual é o "ponto de equilíbrio" do projeto e como a receita mínima afeta o ROI.
+* **Negociação e Otimização de Custos:** A ferramenta se torna um recurso valioso em negociações. Se os custos operacionais forem mais altos do que o esperado, a gerência pode usar o dashboard para determinar se o investimento ainda vale a pena ou se é preciso renegociar com fornecedores.
+* **Planejamento de Cenários:** O dashboard possibilita um planejamento mais robusto e realista, permitindo que a empresa se prepare para cenários otimistas e pessimistas. Ele serve como uma prova visual de que o projeto é viável, mas que também requer um monitoramento contínuo.
+''')
